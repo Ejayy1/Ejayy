@@ -1,0 +1,183 @@
+include emu8086.inc
+
+FileName db "output.txt", 0
+FileHandle dw 0
+
+ResultMsg db 'Result: -_-_-_-_-_-_-_-_-_-_-_-_-_-_', 0
+
+START:
+    MOV AX, 0h
+    MOV BX, 0h
+    MOV CX, 0h
+    MOV DX, 0h
+
+    GOTOXY 1, 0
+    PRINT '-_-_-_-_-_-_-_-_-_-_-_-_-_ EJAY L. ESTORPE BSCS 3A  -_-_-_-_-_-_-_-_-_-_-_-'                    
+    GOTOXY 1, 2
+    PRINT '1-NOTHING/EXIT'  
+    GOTOXY 1, 3
+    PRINT '2-ADDITION'                                 
+    GOTOXY 1, 4
+    PRINT '3-SUBTRACT'  
+    GOTOXY 1, 5
+    PRINT '4-MULTIPLICATION'  
+    GOTOXY 1, 6
+    PRINT '5-DIVISION'  
+    GOTOXY 1, 7
+
+    GOTOXY 3, 12
+    PRINT 'Give First Number:  '           
+    CALL SCAN_NUM
+    MOV [0200h], CX
+    MOV AX, CX
+    GOTOXY 3, 13
+
+    PRINT 'Give Second Number:  ' 
+    CALL SCAN_NUM
+    MOV [0202h], CX
+    MOV CX, 0h
+
+    GOTOXY 2, 15
+    PRINT 'Give Choice: '  
+
+CHOOSE_FALSE_A:
+    CALL SCAN_NUM
+
+    GOTOXY 1, 17
+    CMP CX, 1h
+    JE TIPOTA
+    CMP CX, 2h
+    JE PROSTHESI
+    CMP CX, 3h
+    JE AFERESI
+    CMP CX, 4h
+    JE POLLAPLASIASMOS
+    CMP CX, 5h
+    JE DIERESI
+    CMP CX, 6h
+    JMP FALSE_A
+
+TIPOTA:
+    JMP telos
+
+PROSTHESI:
+    CALL PROSTHESI_a
+    JMP APOTELESMA
+
+PROSTHESI_a:
+    PRINT 'PROSTHESI '
+    ADC AX, [0202h]
+    MOV [0204h], AX
+    RET
+
+AFERESI:
+    CALL AFERESI_a
+    JMP APOTELESMA
+
+AFERESI_a:
+    PRINT 'AFERESI '
+    SBB AX, [0202h]
+    MOV [0204h], AX
+    RET
+
+POLLAPLASIASMOS:
+    CALL POLLAPLASIASMOS_a
+    JMP APOTELESMA
+
+POLLAPLASIASMOS_a:
+    PRINT 'POLLAPLASIASMOS '
+    MOV BX, [0202h]
+    MUL BX
+    MOV [0204h], AX
+    RET
+
+DIERESI:
+    JMP APOTELESMA
+
+DIERESI_a:
+    PRINT 'DIERESI '
+    MOV BX, [0202h]
+    DIV BX
+    MOV [0204h], AX
+    MOV [0206h], DX
+    RET
+
+APOTELESMA:
+    PRINT '-> THE RESULT IS: -_-_-_-_-_-_-  '
+    CALL PRINT_NUM
+    PRINT '  -_-_-_-_-_-_-'             
+    GOTOXY 1, 19
+    PRINT 'PRESS ANY KEY TO CONTINUE'     
+    MOV AH, 0h
+    INT 16h
+    GOTOXY 1, 19
+    PRINT '                         '     
+    GOTOXY 1, 20
+    PRINT 'WOULD YOU LIKE TO RUN THE PROGRAM AGAIN ?'    
+    PRINT '     '  
+    PRINT '1=YES    2=NO'          
+    GOTOXY 1, 22                     
+    PRINT 'Give Choice: '  
+
+CHOOSE_FALSE_B:
+    CALL SCAN_NUM
+    CMP CX, 1h
+    JE AGAIN
+    CMP CX, 2h
+    JE TELOS
+    JMP FALSE_B
+
+AGAIN:
+    ; Create or open a file
+    MOV AH, 3Ch
+    MOV CX, 2 ; Use mode 2 for opening in write-only text mode
+    LEA DX, [FileName]
+    INT 21h
+    MOV [FileHandle], AX
+
+    ; Write result to the file
+    MOV AH, 40h
+    MOV BX, [FileHandle]
+    LEA DX, [ResultMsg]
+    INT 21h
+
+    CALL CLEAR_SCREEN
+    JMP START
+
+FALSE_A:
+    PRINT 'THE CHOICE YOU GAVE IS NOT ACCEPTABLE '
+    GOTOXY 2, 15
+    PRINT 'CHOOSE AGAIN: '
+    JMP CHOOSE_FALSE_A
+
+FALSE_B:
+    GOTOXY 1, 23
+    PRINT 'THE CHOICE YOU GAVE IS NOT ACCEPTABLE '
+    GOTOXY 1, 22
+    PRINT 'GIVE ANOTHER CHOICE: '
+    JMP CHOOSE_FALSE_B
+
+TELOS:
+    CALL CLEAR_SCREEN
+    GOTOXY 3, 21
+    PRINT 'EXITING FROM THE PROGRAM'
+    GOTOXY 28, 4
+    PRINT 'CREDITS'
+    GOTOXY 28, 5
+    PRINT 'NAME --> EJAY L. ESTORPE'
+    GOTOXY 28, 6
+    PRINT 'AEM --> 2632'
+    GOTOXY 28, 7
+    PRINT 'PRESS ANY KEY TO END THE PROGRAM'
+    MOV AH, 0h
+    INT 16h
+    PRINT ''
+
+    HLT
+
+DEFINE_SCAN_NUM
+DEFINE_PRINT_NUM
+DEFINE_PRINT_NUM_UNS
+DEFINE_CLEAR_SCREEN
+
+END
